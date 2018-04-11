@@ -140,8 +140,6 @@ const isSkippedError = error =>
   error.message === UNHEALTHY_VDI_CHAIN_ERROR ||
   error.message === NO_SUCH_OBJECT_ERROR
 
-const filterOptionRenderer = ({ label }) => _(label)
-
 class Log extends BaseComponent {
   state = {
     filter: DEFAULT_CALL_FILTER,
@@ -153,13 +151,18 @@ class Log extends BaseComponent {
     (logId, runId) => logId !== runId
   )
 
-  _getFilteredCalls = createFilter(
+  _getCallsByState = createFilter(
     () => this.props.log.calls,
     createSelector(
-      () => this.state.filter.value,
+      state => state,
       this._getIsJobInterrupted,
-      (value, isInterrupted) => PREDICATES[value](isInterrupted)
+      (state, isInterrupted) => PREDICATES[state](isInterrupted)
     )
+  )
+
+  _getFilteredCalls = createSelector(
+    () => this.state.filter.value,
+    this._getCallsByState
   )
 
   _filterValueRenderer = createSelector(
@@ -172,13 +175,23 @@ class Log extends BaseComponent {
     )
   )
 
+  _filterOptionRenderer = createSelector(
+    ({ label }) => label,
+    ({ value }) => this._getCallsByState(value).length,
+    (label, size) => (
+      <span>
+        {_(label)} ({size})
+      </span>
+    )
+  )
+
   render () {
     return (
       <div>
         <Select
           labelKey='label'
           onChange={this.linkState('filter')}
-          optionRenderer={filterOptionRenderer}
+          optionRenderer={this._filterOptionRenderer}
           options={CALL_FILTER_OPTIONS}
           required
           value={this.state.filter}
