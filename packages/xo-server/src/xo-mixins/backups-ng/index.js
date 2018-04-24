@@ -43,11 +43,16 @@ import { translateLegacyJob } from './migration'
 
 type Mode = 'full' | 'delta'
 
+type GlobalSettings = {|
+  reportWhen?: string,
+|}
+
 type Settings = {|
   deleteFirst?: boolean,
   exportRetention?: number,
   snapshotRetention?: number,
   vmTimeout?: number,
+  ''?: GlobalSettings,
 |}
 
 type SimpleIdPattern = {|
@@ -139,6 +144,7 @@ const getOldEntries = <T>(retention: number, entries?: T[]): T[] =>
 const defaultSettings: Settings = {
   deleteFirst: false,
   exportRetention: 0,
+  reportWhen: 'failure',
   snapshotRetention: 0,
   vmTimeout: 0,
 }
